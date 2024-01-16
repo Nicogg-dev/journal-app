@@ -20,7 +20,7 @@ export const JournalLayout = ({ children }) => {
   }, []); // Dependencia vacía para que solo se ejecute al montar y desmontar
 
   return (
-    <div className="flex flex-row animate__animated animate__fadeIn animate__faster h-screen">
+    <div className="flex flex-row animate__animated animate__fadeIn animate__faster h-full">
 
       {/* NavBar */}
       <NavBar />

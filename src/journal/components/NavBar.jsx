@@ -1,5 +1,6 @@
 import { useDispatch } from "react-redux";
 import { startLogout } from "../../store/auth/thunks";
+import { setActiveNote } from "../../store/journal/journalSlice";
 
 export const NavBar = ({ drawerWidth = 240 }) => {
 
@@ -7,6 +8,7 @@ export const NavBar = ({ drawerWidth = 240 }) => {
 
     const onLogout = () =>{
         dispatch(startLogout());
+        dispatch(setActiveNote(null))
     }
 
     return (

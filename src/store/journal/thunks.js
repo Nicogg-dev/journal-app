@@ -1,14 +1,14 @@
-import { collection, doc, setDoc } from 'firebase/firestore/lite';
+import { collection, doc, getDocs, setDoc } from 'firebase/firestore/lite';
 import { FirebaseDB } from '../../firebase/config';
 
-import { addNewEmptyNote, setActiveNote } from './journalSlice';
+import { addNewEmptyNote, setActiveNote, setNotes, setSaving } from './journalSlice';
 
 export const startNewNote = () => {
-    return async(dispatch, getState) => {
-        
+    return async (dispatch, getState) => {
+
         //getState obtiene toda la data del store
-        const {uid} = getState().auth;
-        
+        const { uid } = getState().auth;
+
 
         const newNote = {
             title: '',
@@ -16,13 +16,49 @@ export const startNewNote = () => {
             date: new Date().getTime(),
         }
 
-        const newDoc = doc( collection(FirebaseDB, `${uid}/journal/notes`) );
-        await setDoc(newDoc, newNote);
-        
-        newNote.id = newDoc.id;
+        const docRef = doc(collection(FirebaseDB, `${uid}/journal/notes`));
+        await setDoc(docRef, newNote);
+
+
+        newNote.id = docRef.id;
 
         //dispatch
-        dispatch( addNewEmptyNote(newNote) );
-        dispatch( setActiveNote (newNote) );
+        dispatch(addNewEmptyNote(newNote));
+        dispatch(setActiveNote(newNote));
+    }
+}
+
+export const startLoadingNotes = () => {
+    return async (dispatch, getState) => {
+
+        const { uid } = getState().auth;
+
+        const collectionRef = collection(FirebaseDB, `${uid}/journal/notes`);
+        const { docs } = await getDocs(collectionRef);
+
+        const data = docs.map(doc => ({
+            id: doc.id,
+            ...doc.data()
+        })
+        );
+
+        dispatch(setNotes(data));
+    }
+}
+
+export const startSaveNote = () => {
+    return async (dispatch, getState) => {
+
+        dispatch(setSaving());
+
+        const { uid } = getState().auth;
+        const { active: activeNote } = getState().journal;
+
+        const noteToFirestore = { ...activeNote };
+        delete noteToFirestore.id;
+
+        const docRef = doc(FirebaseDB, `${uid}/journal/notes/${activeNote.id}`);
+        await setDoc(docRef, noteToFirestore, { merge: true });
+
     }
 }
